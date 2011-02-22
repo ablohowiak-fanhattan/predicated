@@ -24,13 +24,24 @@ GEM
     activesupport (3.0.0.rc)
     arel (0.4.0)
       activesupport (>= 3.0.0.beta)
+    bson (1.2.2)
     builder (2.1.2)
     diff (0.3.6)
     diff-lcs (1.1.2)
     i18n (0.4.1)
+    jnunemaker-validatable (1.8.4)
+      activesupport (>= 2.3.4)
     json (1.1.9)
     minitest (1.7.2)
+    mongo (1.2.2)
+      bson (>= 1.2.2)
+    mongo_mapper (0.8.6)
+      activesupport (>= 2.3.4)
+      jnunemaker-validatable (~> 1.8.4)
+      plucky (~> 0.3.6)
     nokogiri (1.4.3.1)
+    plucky (0.3.6)
+      mongo (~> 1.1)
     polyglot (0.3.1)
     ruby2ruby (1.2.5)
       ruby_parser (~> 2.0)
@@ -62,6 +73,7 @@ DEPENDENCIES
   i18n
   json (= 1.1.9)
   minitest
+  mongo_mapper (= 0.8.6)
   nokogiri
   predicated!
   ruby2ruby

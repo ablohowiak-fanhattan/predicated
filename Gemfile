@@ -16,4 +16,4 @@ gem "activerecord", "~>3.0.0.beta"
 gem "i18n"
 gem "json", "1.1.9"
 gem "treetop", "~>1.4.8"
-
+gem "mongo_mapper", "0.8.6"
