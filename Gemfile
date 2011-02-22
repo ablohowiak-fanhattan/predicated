@@ -1,4 +1,8 @@
 source :gemcutter
+
+gemspec
+
+# TODO: can these be moved into gemspec?
 gem "ruby_parser"
 gem "ruby2ruby"
 gem "ParseTree"

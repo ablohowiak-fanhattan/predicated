@@ -14,6 +14,8 @@ Predicated is a simple predicate model for Ruby.
   EOS
   s.rubyforge_project = "predicated"
 
+  s.add_development_dependency 'wrong', '0.3.3'
+
   s.files      = Dir['lib/**/*']
   s.test_files = Dir['test/**/*.rb']
 
