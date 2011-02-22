@@ -4,7 +4,23 @@ require "./test/canonical_transform_cases"
 require "predicated/to/mongo_mapper"
 include Predicated
 
-regarding "convert a predicate to a json structure" do
+class EmbeddedDoc
+  include MongoMapper::EmbeddedDocument
+  key :y, Integer
+  key :z, Integer
+end
+
+class ExampleTypes
+  include MongoMapper::Document
+  key :a, Integer
+  key :b, Integer
+  key :c, Integer
+  key :d, Boolean
+  key :e, String
+  many :x, :class_name => 'EmbeddedDoc'
+end
+
+regarding "convert a predicate to a mongo mapper structure" do
   expectations = {
     "simple operations" => {
       "eq" => {"a" => 3},
@@ -52,15 +68,6 @@ regarding "convert a predicate to a json structure" do
     }
   }
   
-  class ExampleTypes
-    include MongoMapper::Document
-    key :a, Integer
-    key :b, Integer
-    key :c, Integer
-    key :d, Boolean
-    key :e, String
-  end
-
   tests.each do |test_name, cases|
     test test_name do
       cases.each do |case_name, predicate|
@@ -75,4 +82,29 @@ regarding "convert a predicate to a json structure" do
     assert_raises(Predicated::MongoMapperPredicateNotImplemented) { predicate.to_mongo_mapper_struct(ExampleTypes) }
   end
   
+  regarding "embedded documents" do
+    test "basic" do
+      predicate = Predicate{ Eq('x.y', 1) }
+      assert {
+        predicate.to_mongo_mapper_struct(ExampleTypes) == 
+        { 'x' => { '$elemMatch' => { 'y' => 1 } } }
+      }
+    end
+
+    test "compound" do
+      predicate = Predicate{ And(Eq('x.y', 1), Gt('x.z', 1)) }
+      assert {
+        predicate.to_mongo_mapper_struct(ExampleTypes) == 
+        { 'x' => { '$elemMatch' => { 'y' => 1, 'z' => { '$gt' => 1 } } } }
+      }
+    end
+
+    test "with OR" do
+      predicate = Predicate{ Or(Eq('x.y', 1), Eq('x.y', 2)) }
+      assert {
+        predicate.to_mongo_mapper_struct(ExampleTypes) == 
+        { '$or' => [{'x' => {'$elemMatch' => {'y' => 1}}}, {'x' => {'$elemMatch' => {'y' => 2}}}] }
+      }
+    end    
+  end
 end
