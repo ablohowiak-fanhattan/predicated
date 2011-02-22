@@ -70,4 +70,9 @@ regarding "convert a predicate to a json structure" do
     end
   end
   
+  test "'not' raises error" do
+    predicate = Predicate{ Not(Eq("a",'3')) }
+    assert_raises(Predicated::MongoMapperPredicateNotImplemented) { predicate.to_mongo_mapper_struct(ExampleTypes) }
+  end
+  
 end
