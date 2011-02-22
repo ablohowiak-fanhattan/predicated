@@ -37,6 +37,8 @@ regarding "parse a url part, the result is a parse tree" do
       assert{ @parser.parse("a<1").to_predicate == Predicate{Lt("a", "1")} }
       assert{ @parser.parse("a>=1").to_predicate == Predicate{Gte("a", "1")} }
       assert{ @parser.parse("a<=1").to_predicate == Predicate{Lte("a", "1")} }
+      assert{ @parser.parse("title=Star Wars").to_predicate == Predicate {Eq('title', 'Star Wars')} }
+      assert{ @parser.parse("item.price=5").to_predicate == Predicate {Eq('item.price', '5')} }
     end
 
   end
