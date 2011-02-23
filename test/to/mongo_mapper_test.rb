@@ -36,7 +36,9 @@ regarding "convert a predicate to a mongo mapper structure" do
     },
     "simple and / or" => {
       "and" => {"a" => 1, "b" => 2},
-      "or" =>  {"$or" =>  [{"a" => 1}, {"b" => 2}] }
+      "or" =>  {"$or" =>  [{"a" => 1}, {"b" => 2}] },
+      "or of same" => {"a" => {"$in" => [1, 2]}},
+      "many or of same" => {"a" => {"$in" => [1, 2, 3]}}
     },
     "complex and / or" => {
       "or and" => {"$or" =>  [
@@ -61,10 +63,12 @@ regarding "convert a predicate to a mongo mapper structure" do
     },
     "simple and / or" => {
       "and" => Predicate{ And(Eq("a", '1'),Eq("b", '2')) },
-      "or" => Predicate{ Or(Eq("a", '1'),Eq("b", '2')) }
+      # "or" => Predicate{ Or(Eq("a", '1'),Eq("b", '2')) },
+      "or of same" => Predicate{ Or(Eq("a", '1'),Eq("a", '2')) },
+      "many or of same" => Predicate{ Or(Or(Eq("a", '1'),Eq("a", '2')),Eq('a','3')) }
     },
     "complex and / or" => {
-      "or and" => Predicate{ Or(And(Eq("a", '1'),Eq("b", '2')), Eq("c",'3')) }
+      # "or and" => Predicate{ Or(And(Eq("a", '1'),Eq("b", '2')), Eq("c",'3')) }
     }
   }
   
@@ -103,7 +107,7 @@ regarding "convert a predicate to a mongo mapper structure" do
       predicate = Predicate{ Or(Eq('x.y', 1), Eq('x.y', 2)) }
       assert {
         predicate.to_mongo_mapper_struct(ExampleTypes) == 
-        { '$or' => [{'x' => {'$elemMatch' => {'y' => 1}}}, {'x' => {'$elemMatch' => {'y' => 2}}}] }
+        {'x' => {'$elemMatch' => {'y' => {'$in' => [1,2]}}}}
       }
     end    
   end

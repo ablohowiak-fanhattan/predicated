@@ -35,7 +35,40 @@ module Predicated
 
   class Or
     def to_mongo_mapper_struct(document_class)
-      {"$or" => [left.to_mongo_mapper_struct(document_class), right.to_mongo_mapper_struct(document_class)]}
+      # assume left and right are hashes
+      aggregate_merge(left.to_mongo_mapper_struct(document_class), right.to_mongo_mapper_struct(document_class))
+    end
+    
+    private
+    
+    def aggregate_merge(first, second)
+      target = first.dup
+
+      second.keys.each do |key|
+        if first.has_key?(key)
+          if first[key].is_a?(Hash) && second[key].is_a?(Hash)
+            target[key] = aggregate_merge(target[key], second[key])
+          else
+            val = []
+            if first[key].is_a?(Hash)
+              val << first[key]['$in']
+            else
+              val << first[key]
+            end
+            if second[key].is_a?(Hash)
+              val << second[key]['$in']
+            else
+              val << second[key]
+            end
+            target[key] = {'$in' => val.flatten}
+          end
+          next
+        end
+
+        target[key] = second[key]
+      end
+
+      target
     end
   end
 
