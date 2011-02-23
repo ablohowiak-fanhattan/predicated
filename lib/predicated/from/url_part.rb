@@ -44,7 +44,7 @@ rule leaf
 end
 
 rule unquoted_string
-  [0-9a-zA-Z \.]*
+  [0-9a-zA-Z \._-]*
 end
 
 rule sign
