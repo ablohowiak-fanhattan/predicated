@@ -36,9 +36,11 @@ regarding "convert a predicate to a mongo mapper structure" do
     },
     "simple and / or" => {
       "and" => {"a" => 1, "b" => 2},
+      "and of same" => {"a" => {'$lt' => 5, '$gt' => 3}},
       "or" =>  {"$or" =>  [{"a" => 1}, {"b" => 2}] },
+      "many or" =>  {"$or" =>  [{"a" => 1}, {"b" => 2}, {"c" => 3}] },
       "or of same" => {"a" => {"$in" => [1, 2]}},
-      "many or of same" => {"a" => {"$in" => [1, 2, 3]}}
+      "many or of same" => {"a" => {"$in" => [1, 2, 3, 4]}}
     },
     "complex and / or" => {
       "or and" => {"$or" =>  [
@@ -63,20 +65,32 @@ regarding "convert a predicate to a mongo mapper structure" do
     },
     "simple and / or" => {
       "and" => Predicate{ And(Eq("a", '1'),Eq("b", '2')) },
-      # "or" => Predicate{ Or(Eq("a", '1'),Eq("b", '2')) },
+      "and of same" => Predicate{ And(Lt("a", '5'),Gt("a", '3')) },
+      "or" => Predicate{ Or(Eq("a", '1'),Eq("b", '2')) },
+      "many or" => Predicate{ 
+        Or( 
+          Or( 
+            Eq("a", '1'),
+            Eq("b", '2') 
+          ), 
+          Eq("c", '3')
+        ) 
+      },
       "or of same" => Predicate{ Or(Eq("a", '1'),Eq("a", '2')) },
-      "many or of same" => Predicate{ Or(Or(Eq("a", '1'),Eq("a", '2')),Eq('a','3')) }
+      "many or of same" => Predicate{ Or(Or(Or(Eq("a", '1'),Eq("a", '2')),Eq('a','3')), Eq('a', '4')) }
     },
     "complex and / or" => {
-      # "or and" => Predicate{ Or(And(Eq("a", '1'),Eq("b", '2')), Eq("c",'3')) }
+      "or and" => Predicate{ Or(And(Eq("a", '1'),Eq("b", '2')), Eq("c",'3')) }
     }
   }
   
   tests.each do |test_name, cases|
     test test_name do
+      expectation = expectations[test_name]
       cases.each do |case_name, predicate|
         actual = predicate.to_mongo_mapper_struct(ExampleTypes)
-        assert { actual == expectations[test_name][case_name] }
+        expected = expectation[case_name]
+        assert { actual == expected }
       end
     end
   end

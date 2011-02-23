@@ -42,33 +42,37 @@ module Predicated
     private
     
     def aggregate_merge(first, second)
-      target = first.dup
+      target = {}
 
       second.keys.each do |key|
         if first.has_key?(key)
           if first[key].is_a?(Hash) && second[key].is_a?(Hash)
-            target[key] = aggregate_merge(target[key], second[key])
+            target[key] = aggregate_merge(first[key], second[key])
           else
-            val = []
-            if first[key].is_a?(Hash)
-              val << first[key]['$in']
-            else
-              val << first[key]
-            end
-            if second[key].is_a?(Hash)
-              val << second[key]['$in']
-            else
-              val << second[key]
-            end
-            target[key] = {'$in' => val.flatten}
+            target[key] = {'$in' => collapse_similar('$in', first[key], second[key])}
           end
-          next
+        else
+          target['$or'] = collapse_similar('$or', first, second)
         end
-
-        target[key] = second[key]
       end
 
       target
+    end
+    
+    def collapse_similar(with_key, first, second)
+      val = []
+      if first.is_a?(Hash) && first.has_key?(with_key)
+        val << first[with_key]
+      else
+        val << first
+      end
+      if second.is_a?(Hash) && second.has_key?(with_key)
+        val << second[with_key]
+      else
+        val << second
+      end
+
+      val.flatten
     end
   end
 
