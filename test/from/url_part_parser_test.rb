@@ -41,6 +41,7 @@ regarding "parse a url part, the result is a parse tree" do
       assert{ @parser.parse("item.price=5").to_predicate == Predicate {Eq('item.price', '5')} }
       assert{ @parser.parse("long_name=5").to_predicate == Predicate {Eq('long_name', '5')} }
       assert{ @parser.parse("date=2010-01-01").to_predicate == Predicate {Eq('date', '2010-01-01')} }
+      assert{ @parser.parse("a:b=c").to_predicate == Predicate {Eq('a:b', 'c')} }
     end
 
   end
