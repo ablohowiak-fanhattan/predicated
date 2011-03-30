@@ -5,11 +5,31 @@ module Predicated
   
   class MongoMapperPredicateNotImplemented < StandardError; end
   
+  module NestableBoolean
+  private
+    def collapse_similar(with_key, first, second)
+      val = []
+      if first.is_a?(Hash) && first.has_key?(with_key)
+        val << first[with_key]
+      else
+        val << first
+      end
+      if second.is_a?(Hash) && second.has_key?(with_key)
+        val << second[with_key]
+      else
+        val << second
+      end
+
+      val.flatten
+    end
+  end
+  
   class And
     def to_mongo_mapper_struct(document_class)
       deep_merge(left.to_mongo_mapper_struct(document_class), right.to_mongo_mapper_struct(document_class))
     end
   private
+    include NestableBoolean
     # Merges two hashes, recursively.
     # 
     # This code was lovingly stolen from some random gem:
@@ -26,7 +46,7 @@ module Predicated
           next
         end
         if first[key]
-          target[key] = {'$all' => [first[key], second[key]]}
+          target[key] = {'$all' => collapse_similar('$all', first[key], second[key])}
         else
           target[key] = second[key]
         end
@@ -42,8 +62,8 @@ module Predicated
       aggregate_merge(left.to_mongo_mapper_struct(document_class), right.to_mongo_mapper_struct(document_class))
     end
     
-    private
-    
+  private
+    include NestableBoolean
     def aggregate_merge(first, second)
       target = {}
 
@@ -60,22 +80,6 @@ module Predicated
       end
 
       target
-    end
-    
-    def collapse_similar(with_key, first, second)
-      val = []
-      if first.is_a?(Hash) && first.has_key?(with_key)
-        val << first[with_key]
-      else
-        val << first
-      end
-      if second.is_a?(Hash) && second.has_key?(with_key)
-        val << second[with_key]
-      else
-        val << second
-      end
-
-      val.flatten
     end
   end
 

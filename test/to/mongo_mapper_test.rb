@@ -36,7 +36,7 @@ regarding "convert a predicate to a mongo mapper structure" do
     },
     "simple and / or" => {
       "and" => {"a" => 1, "b" => 2},
-      "and with the same key" => {"a" => {'$all' => [1, 2]}},
+      "and with the same key" => {"a" => {'$all' => [1, 2, 3]}},
       "and of same" => {"a" => {'$lt' => 5, '$gt' => 3}},
       "or" =>  {"$or" =>  [{"a" => 1}, {"b" => 2}] },
       "many or" =>  {"$or" =>  [{"a" => 1}, {"b" => 2}, {"c" => 3}] },
@@ -66,7 +66,7 @@ regarding "convert a predicate to a mongo mapper structure" do
     },
     "simple and / or" => {
       "and" => Predicate{ And(Eq("a", '1'),Eq("b", '2')) },
-      "and with the same key" => Predicate{ And(Eq("a", '1'),Eq("a", '2')) },
+      "and with the same key" => Predicate{ And(Eq("a", '1'),And(Eq("a", '2'),Eq("a", '3'))) },
       "and of same" => Predicate{ And(Lt("a", '5'),Gt("a", '3')) },
       "and of same" => Predicate{ And(Lt("a", '5'),Gt("a", '3')) },
       "or" => Predicate{ Or(Eq("a", '1'),Eq("b", '2')) },
