@@ -25,8 +25,11 @@ module Predicated
           target[key] = deep_merge(target[key], second[key])
           next
         end
-
-        target[key] = second[key]
+        if first[key]
+          target[key] = {'$all' => [first[key], second[key]]}
+        else
+          target[key] = second[key]
+        end
       end
 
       target
