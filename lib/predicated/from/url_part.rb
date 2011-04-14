@@ -26,7 +26,7 @@ rule and
 end
 
 rule operation
-  unquoted_string sign unquoted_string <OperationNode>
+  string sign string <OperationNode>
 end
 
 rule parens
@@ -37,14 +37,20 @@ rule not
   '!'
 end
 
-
-
 rule leaf
   operation / parens
 end
 
+rule string
+  quoted_string / unquoted_string
+end
+
 rule unquoted_string
   [0-9a-zA-Z \._\:\-]*
+end
+
+rule quoted_string
+  '"' (!'"' . / '\\"')* '"' <QuotedString>
 end
 
 rule sign
@@ -97,6 +103,12 @@ end
       def to_predicate
         inner_predicate = inner.to_predicate
         not? ? Not.new(inner_predicate) : inner_predicate
+      end
+    end
+    
+    class QuotedString < Treetop::Runtime::SyntaxNode
+      def text_value
+        elements[1].text_value
       end
     end
     
