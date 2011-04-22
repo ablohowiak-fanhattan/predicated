@@ -23,12 +23,18 @@ regarding "parse a url part, the result is a parse tree" do
       
       tree = @parser.parse("a<1")
       assert{ [tree.left_text, tree.sign_text, tree.right_text] == ["a", "<", "1"] }
-
+      
       tree = @parser.parse("a>=1")
       assert{ [tree.left_text, tree.sign_text, tree.right_text] == ["a", ">=", "1"] }
-
+      
       tree = @parser.parse("a<=1")
       assert{ [tree.left_text, tree.sign_text, tree.right_text] == ["a", "<=", "1"] }
+      
+      tree = @parser.parse('a="foo"')
+      assert{ [tree.left_text, tree.sign_text, tree.right_text] == ["a", "=", "foo"] }
+
+      tree = @parser.parse('a="foo & bar"')
+      assert{ [tree.left_text, tree.sign_text, tree.right_text] == ["a", "=", "foo & bar"] }
     end
     
     test "...to predicate" do
@@ -45,7 +51,7 @@ regarding "parse a url part, the result is a parse tree" do
     end
 
   end
-
+  
   regarding "simple and" do
     test "parse" do
       tree = @parser.parse("a=1&b=2")
@@ -60,11 +66,11 @@ regarding "parse a url part, the result is a parse tree" do
       assert{ @parser.parse("a=1&b=2").to_predicate == Predicate{ And( Eq("a", "1"),Eq("b", "2") ) } }
     end
   end
-
+  
   regarding "simple or" do
     test "parse" do
       tree = @parser.parse("a=1|b=2")
-
+  
       assert{ tree.is_a?(Predicated::TreetopUrlPart::OrNode) }      
       assert{ [[tree.left.left_text, tree.left.sign_text, tree.left.right_text],
                [tree.right.left_text, tree.right.sign_text, tree.right.right_text]] == 
@@ -81,21 +87,21 @@ regarding "parse a url part, the result is a parse tree" do
       assert{ @parser.parse("a=1|b=2|c=3").to_predicate == 
         Predicate{ Or( Eq("a", "1"), Or(Eq("b", "2"),Eq("c", "3")) ) } }
     end
-
+  
     test "many and's" do
       assert{ @parser.parse("a=1&b=2&c=3").to_predicate == 
         Predicate{ And( Eq("a", "1"), And(Eq("b", "2"),Eq("c", "3")) ) } }
     end
-
+  
     test "mixed and/or" do
       assert{ @parser.parse("a=1|b=2&c=3").to_predicate == 
         Predicate{ Or( Eq("a", "1"), And(Eq("b", "2"),Eq("c", "3")) ) } }
-
+  
       assert{ @parser.parse("a=1&b=2|c=3").to_predicate == 
         Predicate{ Or( And(Eq("a", "1"),Eq("b", "2")), Eq("c", "3") ) } }
     end
   end
-
+  
   regarding "parens (force higher precedence)" do
     test "no effect" do
       str = "(a=1|b=2)|c=3"
@@ -106,7 +112,7 @@ regarding "parse a url part, the result is a parse tree" do
       assert{ @parser.parse(str).to_predicate == 
         Predicate{ Or( Or(Eq("a", "1"),Eq("b", "2")), Eq("c", "3") ) } }
     end
-
+  
     test "force precedence" do
       #before
       assert{ @parser.parse("a=1|b=2&c=3").to_predicate == 
@@ -117,7 +123,7 @@ regarding "parse a url part, the result is a parse tree" do
         Predicate{ And( Or(Eq("a", "1"),Eq("b", "2")), Eq("c", "3") ) } }
     end
   end
-
+  
   regarding "not" do
     test "force precedence" do
       assert{ @parser.parse("!(a=1)").to_predicate == 
