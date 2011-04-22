@@ -105,7 +105,7 @@ module Predicated
     end
     
     def cast_right_to_mongo_mapper_type(document_class)
-      document_class.keys[left.to_sym].set(right)
+      document_class.keys[left].set(right)
     end
     
     def to_nested_mongo_mapper_struct(document_class)
