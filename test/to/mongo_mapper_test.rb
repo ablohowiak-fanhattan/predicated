@@ -127,5 +127,28 @@ regarding "convert a predicate to a mongo mapper structure" do
         {'x' => {'$elemMatch' => {'y' => {'$in' => [1,2]}}}}
       }
     end    
+
+    test "with multilevel OR" do
+      predicate = Predicate{ Or(And(Eq('a', 1), Eq('x.y', 1)), Eq('x.y', 2)) }
+      assert {
+        predicate.to_mongo_mapper_struct(ExampleTypes) == 
+        {'$or' => [
+          {'a' => 1, 'x' => {'$elemMatch' => {'y' => 1}}},
+          {'x' => {'$elemMatch' => {'y' => 2}}}
+        ]}
+      }
+    end
+    
+    test "with reverse multilevel OR" do
+      predicate = Predicate{ Or(Eq('x.y', 2), And(Eq('a', 1), Eq('x.y', 1))) }
+      assert {
+        predicate.to_mongo_mapper_struct(ExampleTypes) == 
+        {'$or' => [
+          {'x' => {'$elemMatch' => {'y' => 2}}},
+          {'a' => 1, 'x' => {'$elemMatch' => {'y' => 1}}}
+        ]}
+      }
+      
+    end
   end
 end

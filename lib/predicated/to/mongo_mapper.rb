@@ -1,7 +1,7 @@
 require "predicated/predicate"
 
 module Predicated
-  require_gem_version("mongo_mapper", "0.8.6")
+  require_gem_version("mongo_mapper", "0.9.0")
   
   class MongoMapperPredicateNotImplemented < StandardError; end
   
@@ -67,15 +67,17 @@ module Predicated
     def aggregate_merge(first, second)
       target = {}
 
+      unless first.keys.to_set == second.keys.to_set
+        target['$or'] = collapse_similar('$or', first, second)
+        return target
+      end
+
+      # first and second have the same keys
       second.keys.each do |key|
-        if first.has_key?(key)
-          if first[key].is_a?(Hash) && second[key].is_a?(Hash)
-            target[key] = aggregate_merge(first[key], second[key])
-          else
-            target[key] = {'$in' => collapse_similar('$in', first[key], second[key])}
-          end
+        if first[key].is_a?(Hash) && second[key].is_a?(Hash)
+          target[key] = aggregate_merge(first[key], second[key])
         else
-          target['$or'] = collapse_similar('$or', first, second)
+          target[key] = {'$in' => collapse_similar('$in', first[key], second[key])}
         end
       end
 
