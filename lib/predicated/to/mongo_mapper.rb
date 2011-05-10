@@ -67,18 +67,19 @@ module Predicated
     def aggregate_merge(first, second)
       target = {}
 
-      unless first.keys.to_set == second.keys.to_set
+      one_key = first.size == 1 && second.size == 1
+      same_keys = first.keys.to_set == second.keys.to_set
+      if !one_key || !same_keys
         target['$or'] = collapse_similar('$or', first, second)
         return target
       end
 
-      # first and second have the same keys
-      second.keys.each do |key|
-        if first[key].is_a?(Hash) && second[key].is_a?(Hash)
-          target[key] = aggregate_merge(first[key], second[key])
-        else
-          target[key] = {'$in' => collapse_similar('$in', first[key], second[key])}
-        end
+      # first and second have one identical key
+      key = second.keys.first
+      if first[key].is_a?(Hash) && second[key].is_a?(Hash)
+        target[key] = aggregate_merge(first[key], second[key])
+      else
+        target[key] = {'$in' => collapse_similar('$in', first[key], second[key])}
       end
 
       target

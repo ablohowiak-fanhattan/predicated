@@ -148,7 +148,29 @@ regarding "convert a predicate to a mongo mapper structure" do
           {'a' => 1, 'x' => {'$elemMatch' => {'y' => 1}}}
         ]}
       }
-      
+    end
+    
+    test "with toplevel and multilevel OR, where the nested components do not share keys" do
+      predicate = Predicate{ Or(And(Eq('a', 2), Eq('x.y', 2)), And(Eq('a', 1), Eq('x.z', 1))) }
+      assert {
+        predicate.to_mongo_mapper_struct(ExampleTypes) == 
+        {'$or' => [
+          {'a' => 2, 'x' => {'$elemMatch' => {'y' => 2}}},
+          {'a' => 1, 'x' => {'$elemMatch' => {'z' => 1}}}
+        ]}
+      }
+    end
+
+    test "with toplevel and multilevel OR, where the nested components do share keys" do
+      "(a=2&x.y=2)|(a=1&x.y=1)"
+      predicate = Predicate{ Or(And(Eq('a', 2), Eq('x.y', 2)), And(Eq('a', 1), Eq('x.y', 1))) }
+      assert {
+        predicate.to_mongo_mapper_struct(ExampleTypes) == 
+        {'$or' => [
+          {'a' => 2, 'x' => {'$elemMatch' => {'y' => 2}}},
+          {'a' => 1, 'x' => {'$elemMatch' => {'y' => 1}}}
+        ]}
+      }
     end
   end
 end
