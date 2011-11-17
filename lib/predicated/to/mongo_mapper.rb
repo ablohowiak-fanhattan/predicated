@@ -19,7 +19,6 @@ module Predicated
       else
         val << second
       end
-
       val.flatten
     end
   end
@@ -66,7 +65,6 @@ module Predicated
     include NestableBoolean
     def aggregate_merge(first, second)
       target = {}
-
       one_key = first.size == 1 && second.size == 1
       same_keys = first.keys.to_set == second.keys.to_set
       if !one_key || !same_keys
@@ -79,9 +77,9 @@ module Predicated
       if first[key].is_a?(Hash) && second[key].is_a?(Hash)
         target[key] = aggregate_merge(first[key], second[key])
       else
-        target[key] = {'$in' => collapse_similar('$in', first[key], second[key])}
+        collapsed_hash = collapse_similar('$in', first[key], second[key])
+        target[key] = key.eql?('$in') ? collapsed_hash : { '$in' => collapsed_hash }
       end
-
       target
     end
   end
