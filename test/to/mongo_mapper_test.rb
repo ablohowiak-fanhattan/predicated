@@ -172,5 +172,26 @@ regarding "convert a predicate to a mongo mapper structure" do
         ]}
       }
     end
+    
+    test "with toplevel and multilevel OR, where all the nested components do share the same key" do
+      "x=4|(x=5|(x=7|x=9))"
+      predicate = Predicate{ Or(Or(Or(Eq("x.y", 4),Eq("x.y", 5)),Eq('x.y', 7)), Eq('x.y', 9)) }
+      
+      assert {
+        predicate.to_mongo_mapper_struct(ExampleTypes) ==
+        {'x' => {'$elemMatch' => {'y' => {'$in' => [4,5,7,9]}}}}
+      }
+    end
+    
+    test "with multilevel nested OR, where all the nested components do share the same key" do
+      "x=4|(x=5|(x=7|x=9))"
+      predicate = Predicate{ Or(Or(Eq("x.y", 4), Eq("x.y", 5)), Or(Eq("x.y", 6), Or(Eq('x.y', 7), Eq('x.y', 8)))) }
+      
+      assert {
+        predicate.to_mongo_mapper_struct(ExampleTypes) ==
+        {'x' => {'$elemMatch' => {'y' => {'$in' => [4, 5, 6, 7, 8]}}}}
+      }
+    end    
+    
   end
 end
