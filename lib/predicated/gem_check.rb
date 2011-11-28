@@ -1,8 +1,6 @@
 module Predicated
   def self.require_gem_version(gem_name, minimum_version, require_name=gem_name)
-    begin
-      Gem::Specification.find_by_name(gem_name, Gem::Requirement.create(">= #{minimum_version}"))
-    rescue StandardError => exc
+    unless Gem.available?(gem_name, Gem::Requirement.create(">= #{minimum_version}"))
       raise %{
 Gem: #{gem_name} >=#{minimum_version}
 Does not appear to be installed.  Please install it.
